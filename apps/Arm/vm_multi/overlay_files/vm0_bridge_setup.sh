@@ -42,7 +42,8 @@ dnsmasq \
 
 # Set up exit to the outside world
 ip link set up dev eth1
-udhcpc -i eth1 > /tmp/dhcp 2> /tmp/dhcp
+ip link add link eth1 name eth1.1000 type vlan id 1000
+udhcpc -i eth1.1000 > /tmp/dhcp 2> /tmp/dhcp
 
 # ETH1_IP=$(cat /tmp/dhcp | grep 'obtained from' | awk -F 'obtained from ' '{print $2}' | awk -F ',' '{print $1}')
 # 
