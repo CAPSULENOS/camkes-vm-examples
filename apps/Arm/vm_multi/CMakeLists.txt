@@ -256,6 +256,11 @@ DefineCAmkESVMFileServer()
 
 CAmkESAddImportPath(${KernelARMPlatform})
 
+# add CAPSULE_MAC_PREFIX
+if (CAPSULE_MAC_PREFIX)
+    list(APPEND cpp_flags "-DCAPSULE_MAC_PREFIX=${CAPSULE_MAC_PREFIX}")
+endif()
+
 # Declare root server
 DeclareCAmkESRootserver(
     vm_multi.camkes
