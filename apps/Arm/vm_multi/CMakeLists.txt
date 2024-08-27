@@ -242,6 +242,11 @@ if (CAPSULE_MAC_PREFIX)
     list(APPEND cpp_flags "-DCAPSULE_MAC_PREFIX=${CAPSULE_MAC_PREFIX}")
 endif()
 
+# add CAPSULE_NODE
+if (CAPSULE_NODE)
+    list(APPEND cpp_flags "-DCAPSULE_NODE=${CAPSULE_NODE}")
+endif()
+
 # Declare root server
 DeclareCAmkESRootserver(
     vm_multi.camkes
