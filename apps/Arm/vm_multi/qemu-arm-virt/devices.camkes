@@ -6,6 +6,15 @@
 
 #include <configurations/vm.h>
 
+#define XSTR(x)     STR(x)
+#define STR(x)      #x
+
+#ifndef CAPSULE_NODE
+#define VM0_NAME    "vm0"
+#else
+#define VM0_NAME    XSTR(CAPSULE_NODE)
+#endif
+
 //#define VM_INITRD_MAX_SIZE 0x3200000 //50 MB
 #define VM_INITRD_MAX_SIZE  0xc800000 //200 MB
 #define VM_DTB_OFFSET       0x1000000 // 16 MB below the end of RAM
@@ -33,6 +42,7 @@
 #define VM3_RAM_BASE        0xa00000000
 #define VM3_RAM_SIZE        0x20000000 // 2<^29 == 512MB
 #define VM3_DTB_ADDR        VM_DTB_ADDR(VM3_RAM_BASE, VM2_RAM_SIZE, VM_DTB_OFFSET)
+
 #define VM3_INITRD_ADDR     VM_INITRD_ADDR(VM3_DTB_ADDR, VM_INITRD_MAX_SIZE)
 
 assembly {
@@ -47,7 +57,7 @@ assembly {
             "initrd_addr" : VAR_STRINGIZE(VM0_INITRD_ADDR),
         };
         vm0.vm_image_config = {
-            "kernel_bootcmdline" : "node=vm0 pci=nomsi console=ttyAMA0 mgmtnic=eth1 mgmtvlan=1000", // pci=nomsi is a MUST for passthrough VM
+            "kernel_bootcmdline" : "node=" VM0_NAME " pci=nomsi console=ttyAMA0 mgmtnic=eth1 mgmtvlan=1000", // pci=nomsi is a MUST for passthrough VM
             "kernel_stdout" : "/pl011@9000000",
             "initrd_name" : "linux-initrd-vm0",
             "generate_dtb": true,
