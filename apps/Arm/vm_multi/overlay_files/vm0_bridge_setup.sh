@@ -18,6 +18,7 @@ ovs-vsctl add-br br0
 ovs-vsctl add-port br0 eth0
 
 
+ip link set up dev br0
 ip link set up dev eth0
 ip addr add $GATEWAY/24 dev br0
 
@@ -30,8 +31,8 @@ dnsmasq \
     --dhcp-authoritative  \
     --dhcp-range=$DHCPRANGE \
     --conf-file="" \
-    --pid-file=/var/run/dnsmasq-eth0.pid \
-    --dhcp-leasefile=/var/run/dnsmasq-eth0.leases \
+    --pid-file=/var/run/dnsmasq-br0.pid \
+    --dhcp-leasefile=/var/run/dnsmasq-br0.leases \
     --dhcp-no-override
 
 # Forward data to the bridge and from the bridge. Going to have flows happen in bridge space

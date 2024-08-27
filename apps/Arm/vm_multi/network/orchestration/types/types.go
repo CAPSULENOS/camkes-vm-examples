@@ -18,12 +18,68 @@ type NodeInfo struct {
 }
 
 type DebugInfo struct {
-    OrderVlans bool    `yaml:"order_vlans"`
+    OrderVlans      bool                           `yaml:"order_vlans"`
+    Verbose         bool                           `yaml:"verbose"`
+}
+
+type IPInfo struct {
+    Sel4Name        string
+    UserIP          string
+    UserName        string    
+}
+
+type Config struct {
+    DataPaths       map[string]DataPath            `yaml:"data_paths"`
+    Debug           DebugInfo                      `yaml:"debug"`
+}
+
+
+type DataPath struct {
+    Settings        DataPathSettings               `yaml:"settings"`
+    Ingest          IngestInfo                     `yaml:"ingest"`
+    Functions       map[string]Function            `yaml:"functions"`
+    Connections     [][2]int
+}
+
+type DataPathSettings struct {
+    IP              string                         `yaml:"IP"`
+}
+
+type Function struct {
+    Args    map[string]string                      `yaml:"args"`    // Existing function arguments
+    VIDS    [2]int                                 // Additional field not mapped from YAML
+}
+
+type IngestInfo struct {
+    InterfaceName   string                         `yaml:"InterfaceName"`
+    PrivateKey      string                         `yaml:"PrivateKey"`
+    Address         string                         `yaml:"Address"`
+    ListenPort      string                         `yaml:"ListenPort"`
+    Peers           map[string]PeerInfo            `yaml:"peers"`
+}
+
+type PeerInfo struct {
+    PublicKey      string                         `yaml:"PublicKeys"`
+    AllowedIPs     []string                       `yaml:"AllowedIPs"`
+    Endpoint       string                         `yaml:"Endpoint"`
+}
+
+// type Functions struct {
+//     Name           String             ``
+//     Args           map[String]String  ``
+// }
+
+
+
+/*
+type Link struct {
+    From string `yaml:"from"`
+    To   string `yaml:"to"`
 }
 
 type Cluster struct {
     Settings      Settings      `yaml:"settings"`
-    Nodes         []string       `yaml:"nodes"`
+    Nodes         []string      `yaml:"nodes"`
     Connections   []Connection  `yaml:"connections"`
     Functionality []string      `yaml:"functionality"`
 }
@@ -43,14 +99,5 @@ type Topology struct {
     Settings Settings `yaml:"settings"`
     Links    []Link   `yaml:"links"`
 }
+*/
 
-type Link struct {
-    From string `yaml:"from"`
-    To   string `yaml:"to"`
-}
-
-type Config struct {
-    Clusters        map[string]Cluster `yaml:"clusters"`
-    ClusterTopology Topology           `yaml:"topology"`
-    Debug           DebugInfo          `yaml:"debug"`
-}
