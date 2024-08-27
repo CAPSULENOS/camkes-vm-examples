@@ -19,12 +19,7 @@ ovs-vsctl add-port br0 eth0
 
 
 ip link set up dev eth0
-ip link set up dev br0
-
-# Add a default route via eth0 with a higher priority (lower metric)
 ip addr add $GATEWAY/24 dev br0
-ip route add default via $GATEWAY dev br0
-
 
 dnsmasq \
     --strict-order \
@@ -39,11 +34,19 @@ dnsmasq \
     --dhcp-leasefile=/var/run/dnsmasq-eth0.leases \
     --dhcp-no-override
 
+<<<<<<< HEAD
 
 # Set up exit to the outside world
 ip link set up dev eth1
 ip link add link eth1 name eth1.1000 type vlan id 1000
 udhcpc -i eth1.1000 > /tmp/dhcp 2> /tmp/dhcp
+=======
+# Forward data to the bridge and from the bridge. Going to have flows happen in bridge space
+ovs-ofctl del-flows br0
+ovs-ofctl add-flow br0 "priority=100,in_port=eth0 actions=output:br0"
+ovs-ofctl add-flow br0 "priority=0,actions=output:eth0"
+# ovs-ofctl add-flow br0 "priority=100,in_port=br0 actions=output:eth0"
+>>>>>>> cea7a26 (update vm_multi)
 
 # ETH1_IP=$(cat /tmp/dhcp | grep 'obtained from' | awk -F 'obtained from ' '{print $2}' | awk -F ',' '{print $1}')
 # 
