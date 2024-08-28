@@ -8,12 +8,10 @@ import (
     "strconv"
     "gopkg.in/yaml.v3"
     "orchestration/types"
-    // "errors"
 )
 
 type Config  = types.Config
 type NodeInfo = types.NodeInfo
-type IPInfo = types.IPInfo
 type FunctionalityInfo = types.FunctionalityInfo
 
 func LogE(args ...interface{}) {
@@ -46,36 +44,14 @@ func LogE(args ...interface{}) {
             case []FunctionalityInfo:
                 for _, el := range v {
                     result += fmt.Sprintf("Name: %v\n", el.Name)
-                    result += fmt.Sprintf("  Mac: %v\n", el.Mac)
-                    result += fmt.Sprintf("  Sel4Name: %v\n", el.Sel4Name)
-                    result += fmt.Sprintf("  VIDS:\n    ")
-                    for _, vid := range el.VIDs { result += fmt.Sprintf("%v,", vid) }
-                    result += "\n"
-                    result += fmt.Sprintf("  Sel4IP: %v\n\n", el.Sel4IP)
                 }
              case []NodeInfo:
                 for _, el := range v {
                     result += fmt.Sprintf("Name: %v\n", el.Name)
                     result += fmt.Sprintf("  Mac: %v\n", el.Mac)
                     result += fmt.Sprintf("  Sel4Name: %v\n", el.Sel4Name)
-                    result += fmt.Sprintf("  VIDS:\n    ")
-                    for _, vid := range el.VIDs { result += fmt.Sprintf("%v,", vid) }
                     result += "\n"
-                    result += fmt.Sprintf("  IPs:\n")
-                    for _, ip := range el.IPs { result += fmt.Sprintf("    %v\n", ip) }
                     result += fmt.Sprintf("  Sel4IP: %v\n\n", el.Sel4IP)
-                }
-             case [][2]IPInfo:
-                for i, el := range v {
-                    result += fmt.Sprintf("IP Info Entry %v:\n", i)
-                    result += fmt.Sprintf("  Element 1:\n")
-                    result += fmt.Sprintf("    Sel4 Name: %v\n", el[0].Sel4Name)
-                    result += fmt.Sprintf("    User IP: %v\n", el[0].UserIP)
-                    result += fmt.Sprintf("    User Name: %v\n\n", el[0].UserName)
-                    result += fmt.Sprintf("  Element 2:\n")
-                    result += fmt.Sprintf("    Sel4 IP: %v\n", el[1].Sel4Name)
-                    result += fmt.Sprintf("    User IP: %v\n", el[1].UserIP)
-                    result += fmt.Sprintf("    User Name: %v\n\n", el[1].UserName)
                 }
             case []interface{}:
                 for _, el := range v {

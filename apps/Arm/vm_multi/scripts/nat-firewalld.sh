@@ -11,8 +11,16 @@ ip link show dev $TAP &> /dev/null
 if [ $? -ne 0 ]; then
     ip tuntap add dev $TAP mode tap
     ip link set up dev $TAP
-    ip addr add dev $TAP $GATEWAY/$NETMASK
+    # ip addr add dev $TAP $GATEWAY/$NETMASK
 fi
+
+ip link show dev $TAP.1000 &> /dev/null
+if [ $? -ne 0 ]; then
+    ip link add link $TAP name $TAP.1000 type vlan id 1000
+    ip link set up dev $TAP.1000
+    ip addr add dev $TAP.1000 $GATEWAY/$NETMASK
+fi
+
 
 # Enable routing
 sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1
@@ -20,7 +28,7 @@ sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1
 # Enable masquerade and dhcp/dns on the TAP device
 zone=$(firewall-cmd --get-default-zone)
 firewall-cmd --zone=$zone --add-forward --permanent
-firewall-cmd --zone=$zone --add-interface=$TAP --permanent
+firewall-cmd --zone=$zone --add-interface=$TAP.1000 --permanent
 firewall-cmd --zone=$zone --add-service=dhcp --add-service=dns --permanent
 firewall-cmd --reload
 
@@ -31,7 +39,7 @@ dns_cmd=(
     dnsmasq
     --strict-order
     --except-interface=lo
-    --interface=$TAP
+    --interface=$TAP.1000
     --listen-address=$GATEWAY
     --bind-interfaces
     --dhcp-authoritative 

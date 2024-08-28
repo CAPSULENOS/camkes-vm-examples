@@ -15,6 +15,7 @@ show_help() {
     echo "Options:"
     echo "  --bi,    Allow bidirectional flow"
     echo "  --uni,   Allow unidirectional flow (default)"
+    echo "  --node,  Specify the node to apply this flow to"
     echo "  --dev,   Specify the device to apply this flow to"
     echo "  --vid1,  Specify the vlan id to forward from"
     echo "  --vid2,  Specify the vlan id to forward to"
@@ -116,14 +117,14 @@ sshpass -p "root" dbclient -y "$node" "ip link set $dev.$vid1 master br$vid1$vid
 sshpass -p "root" dbclient -y "$node" "ip link set $dev.$vid2 master br$vid1$vid2"
 
 
-# Set up forwarding rules
-echo sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
-sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
-# sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i eth0.20 -o eth0.10 -j ACCEPT"
-
-# Enfore unidirectionality to prevent broadcast storms
-echo sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j DROP"
-sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j DROP"
+# # Set up forwarding rules
+# echo sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
+# sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
+# # sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i eth0.20 -o eth0.10 -j ACCEPT"
+# 
+# # Enfore unidirectionality to prevent broadcast storms
+# echo sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j DROP"
+# sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j DROP"
 
 
 

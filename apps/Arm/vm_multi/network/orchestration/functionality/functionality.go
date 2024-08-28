@@ -2,50 +2,116 @@ package functionality
 
 import (
     "orchestration/types"
-    // "orchestration/helpers" // Used to get functionality from functionality_map
 )
 
+type Config = types.Config
 type FunctionalityInfo = types.FunctionalityInfo
 type NodeInfo = types.NodeInfo
 type DebugInfo  = types.DebugInfo
-type Cluster  = types.Cluster
-type Settings  = types.Settings
-type Connection  = types.Connection
-type Topology  = types.Topology
-type Link  = types.Link
-type Config  = types.Config
+type DataPath = types.DataPath
+type IngestInfo = types.IngestInfo
 
 
-// Populate the functionality map with initial info (functionality names only)
-func InitializeFunctionalityMapEntries(functionality_map map[string]*FunctionalityInfo, functionality [] string) map[string]*FunctionalityInfo {
+func PopulateFunctionSettings(network_settings Config) (map[string]FunctionalityInfo) {
+    function_settings :=  make(map[string]FunctionalityInfo)
 
-    for _, el := range functionality { 
-        if _, ok := functionality_map[el]; ok { continue; }
-        functionality_map[el] = &FunctionalityInfo{Name: el}
+    for kind, inst := range network_settings.Functionality {
+        for name, details := range inst {
+            details.Type = kind
+            function_settings[name] = details
+        }
     }
 
-    return functionality_map
+    return function_settings
 }
 
 
-func AllocateFunctionalNodes(available_nodes []NodeInfo, functionality_map map[string]*FunctionalityInfo) ([]NodeInfo, []NodeInfo) {
+func FinalizeFunctionSettings(function_map map[string]FunctionalityInfo, function_name string, ingest IngestInfo, available_nodes []NodeInfo, new_vids [2]int) map[string]FunctionalityInfo {
 
-    // requested_functionality := helpers.GetKeys(functionality_map)
+    settings := function_map[function_name]
 
-    var functional_nodes []NodeInfo
+    switch settings.Type {
+        case "router":
+            if len(settings.SubnetToVlan) == 0 { settings.SubnetToVlan = make(map[string]int) }
+            settings.SubnetToVlan[ingest.Subnet] = new_vids[0]
+        case "silent":
+            if len(settings.Vlans) == 0 { 
+                settings.Vlans = [][2]int{ new_vids } 
+            } else {
+                settings.Vlans = append(settings.Vlans, new_vids)
+            }
+        default:
+            return function_map
+    }
 
-    functional_nodes = []NodeInfo{ available_nodes[0] }
-    available_nodes = available_nodes[1:]
+    if settings.PhysicalNode == nil {
+        settings = AssignFunctionalityToInfraNode(settings, available_nodes)
+    }
 
+    function_map[function_name] = settings
 
-    return available_nodes, functional_nodes
+    return function_map
 }
 
-func AssignFunctionalityToInfra(functionality_nodes []FunctionalityInfo, infrastructure_nodes []NodeInfo) []FunctionalityInfo {
-    for i := 0; i < len(functionality_nodes); i++ {
-        functionality_nodes[i].Mac = infrastructure_nodes[0].Mac
-        functionality_nodes[i].Sel4Name = infrastructure_nodes[0].Sel4Name
-        functionality_nodes[i].Sel4IP = infrastructure_nodes[0].Sel4IP
+var counter int;
+
+func AssignFunctionalityToInfraNode(function_settings FunctionalityInfo, available_nodes []NodeInfo) FunctionalityInfo {
+
+    function_settings.PhysicalNode = &available_nodes[counter];
+
+    counter = (counter + 1) % len(available_nodes);
+
+    return function_settings
+}
+
+
+// Below is where the data path is build and various fields are populated
+
+
+// Wrapper so the main statement is easier to read but we don't repeat ourselves
+func FinalizeInternalForwardPath(internal_path []string, function_settings map[string]FunctionalityInfo, datapath_settings DataPath, available_nodes []NodeInfo, vid_index int, last_vid int) (map[string]FunctionalityInfo, DataPath, int, int, error) {
+    return populateFieldsNecessaryToBuildInternalDataPath(internal_path, function_settings, datapath_settings, available_nodes, vid_index, last_vid)
+}
+
+func FinalizeInternalReversePath(internal_path []string, function_settings map[string]FunctionalityInfo, datapath_settings DataPath, available_nodes []NodeInfo, vid_index int, last_vid int) (map[string]FunctionalityInfo, DataPath, int, int, error) {
+    return populateFieldsNecessaryToBuildInternalDataPath(internal_path, function_settings, datapath_settings, available_nodes, vid_index, last_vid)
+}
+
+
+type BuildInternalPathError struct {
+    s string
+}
+
+func (e *BuildInternalPathError) Error() string {
+    return e.s
+}
+
+func NewBuildInternalPathError(message string) *BuildInternalPathError {
+    return &BuildInternalPathError{s: message}
+}
+
+
+func populateFieldsNecessaryToBuildInternalDataPath(internal_path []string, function_settings map[string]FunctionalityInfo, datapath_settings DataPath, available_nodes []NodeInfo, vid_index int, last_vid int) (map[string]FunctionalityInfo, DataPath, int, int, error) {
+    for _, function_name := range internal_path {
+
+        if vid_index + 1 >= 4096 { 
+            err := NewBuildInternalPathError("Too many vlans required for this configuration")
+            return function_settings, datapath_settings, vid_index, last_vid, err
+        }
+
+        // Assign VIDs to a given function
+        new_vids := [2]int{vid_index, vid_index + 1}
+
+        function_settings = FinalizeFunctionSettings(function_settings, function_name, datapath_settings.Ingest, available_nodes, new_vids)
+
+        if last_vid > 0 {
+            datapath_settings.Connections =  append(datapath_settings.Connections, [2]int{last_vid, vid_index})
+        }
+
+        last_vid = vid_index + 1 // Outbound VID path
+        // increment vid_index to prevent overlap
+        vid_index += 2
     }
-    return functionality_nodes
+
+    return function_settings, datapath_settings, vid_index, last_vid, nil
 }

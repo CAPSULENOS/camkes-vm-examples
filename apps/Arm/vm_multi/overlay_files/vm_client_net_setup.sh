@@ -10,7 +10,9 @@ set -e
 # mkdir -p /etc/dhcp/
 # touch /etc/dhcp/dhclient.conf
 
-vm_name=$(cat /proc/cmdline | awk '{print $1}' | awk '{print substr($0, 6)}')
+boot_args=$(cat /proc/cmdline)
+# Extract the value of node=
+vm_name=$(grep -o 'node=[^ ]*' /proc/cmdline | cut -d'=' -f2)
 
 # echo "$vm_name" >> /etc/dhcp/dhclient.conf
 

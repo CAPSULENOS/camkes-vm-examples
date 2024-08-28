@@ -186,6 +186,12 @@ AddFileToOverlayDir(
     overlay_vm0
 )
 AddFileToOverlayDir(
+    "add-route"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/add-route
+    "root"
+    overlay_vm0
+)
+AddFileToOverlayDir(
     "connect-vlans"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/connect-vlans
     "root"

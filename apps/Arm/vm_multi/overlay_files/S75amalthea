@@ -1,0 +1,47 @@
+#!/bin/sh
+
+nic=""
+vlan=""
+hostname=""
+
+set -- $(cat /proc/cmdline)
+for x in "$@"; do
+    case "$x" in
+        mgmtnic=*)
+            nic=$(echo "${x#mgmtnic=}")
+            ;;
+        mgmtvlan=*)
+            vlan=$(echo "${x#mgmtvlan=}")
+            ;;
+        node=*)
+            hostname=$(echo "${x#node=}")
+            ;;
+        *)
+            ;;
+    esac
+done
+
+if [ -z "$nic" ]; then
+    echo "no 'mgmtnic' cmdline argument"
+    exit 0
+fi
+
+if [ -z "$vlan" ]; then
+    echo "no 'mgmtvlan' cmdline argument"
+    exit 0
+fi
+
+ifx="$nic.$vlan"
+ip link add link $nic name $ifx type vlan id $vlan
+ip link set up dev $nic
+ip link set up dev $ifx
+
+
+if [ -z "$hostname" ]; then
+    echo "no 'node' cmdline arugment; not setting hostname"
+    udhcpc -i $ifx
+else
+    hostname "$hostname"
+    echo "$hostname" > /etc/hostname
+    udhcpc -i $ifx -x hostname:"$hostname"
+fi

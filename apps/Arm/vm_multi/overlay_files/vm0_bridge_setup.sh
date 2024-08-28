@@ -16,10 +16,12 @@ DHCPRANGE=10.192.10.100,10.192.10.254
 
 ovs-vsctl add-br br0
 ovs-vsctl add-port br0 eth0
+ovs-vsctl add-port br0 eth1
 
 
 ip link set up dev br0
 ip link set up dev eth0
+ip link set up dev eth1
 ip addr add $GATEWAY/24 dev br0
 
 dnsmasq \
