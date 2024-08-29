@@ -204,14 +204,14 @@ AddFileToOverlayDir(
     overlay_vm0
 )
 AddFileToOverlayDir(
-    "setup"
-    ${CMAKE_CURRENT_SOURCE_DIR}/network/orchestration/setup
+    "aegis"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis/aegis
     "root"
     overlay_vm0
 )
 AddFileToOverlayDir(
-    "config.yml"
-    ${CMAKE_CURRENT_SOURCE_DIR}/network/config.yml
+    "aegis-conf.yml"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
     "root"
     overlay_vm0
 )

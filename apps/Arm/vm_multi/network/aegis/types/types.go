@@ -9,9 +9,10 @@ import (
 
 
 type Config struct {
+    NumberOfVms                           int                                     `yaml:"local_vms"`
     Functionality                         map[string]map[string]FunctionalityInfo `yaml:"functions"`
-    DataPaths                             map[string]DataPath            `yaml:"data_paths"`
-    Debug                                 DebugInfo                      `yaml:"debug"`
+    DataPaths                             map[string]DataPath                     `yaml:"data_paths"`
+    Debug                                 DebugInfo                               `yaml:"debug"`
 }
 
 type FunctionalityInfo struct {

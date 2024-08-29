@@ -1,3 +1,5 @@
+local_vms: 3
+
 functions:
   router:
     internal_router:

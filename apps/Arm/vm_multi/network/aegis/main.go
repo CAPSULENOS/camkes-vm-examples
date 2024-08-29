@@ -1,6 +1,7 @@
 package main
 
 import (
+    "time"
     "orchestration/helpers"
     "orchestration/types"
     "orchestration/functionality"
@@ -15,7 +16,7 @@ type Config  = types.Config
 
 func main() {
 
-    config_file := "/root/config.yml"
+    config_file := "/root/aegis-conf.yml"
 
     // Read the config file
     var network_settings Config
@@ -37,15 +38,18 @@ func main() {
     lease_file := "/var/run/dnsmasq-br0.leases"
 
     available_nodes, err = nodes.GetAvailableNodes(lease_file)
-    if err != nil {
-        helpers.LogE("Error finding the number of connected nodes.", err, "Exiting")
-        return
+    for len(available_nodes) < network_settings.NumberOfVms || err != nil {
+        if err != nil {
+            helpers.LogE("Error finding the number of connected nodes.", err, "Exiting")
+            return
+        }
+        
+        helpers.LogE("No available VMs on the network. Waiting for VMs...")
+        time.Sleep(time.Second)
+        
+        // Update available_nodes and err for the next iteration
+        available_nodes, err = nodes.GetAvailableNodes(lease_file)
     }
-    if len(available_nodes) == 0 {
-        helpers.LogE("No available nodes on the network. Exiting")
-        return
-    }
-
 
     // Set up /etc/hosts for ease of use
     err = build.EtcHosts(available_nodes)

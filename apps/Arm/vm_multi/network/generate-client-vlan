@@ -83,7 +83,7 @@ fi
 sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 echo sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 
-random_mac=$(hexdump -n 6 -e '/1 ":%02X"' /dev/urandom | sed 's/^://')
+random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
 sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid address $random_mac"
 echo sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid address $random_mac"
 
