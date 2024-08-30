@@ -72,8 +72,8 @@ func ForwardingPath(connections [][2]int, Type string) error {
 
     // Apply the forwarding paths on the current node
     for _, connection := range internal_connections {
-        fmt.Println("/connect-vlans", "--uni", "--vid1", strconv.Itoa(connection[0]), "--vid2", strconv.Itoa(connection[1]))
-        cmd = exec.Command("/root/connect-vlans", "--uni", "--vid1", strconv.Itoa(connection[0]), "--vid2", strconv.Itoa(connection[1]))
+        fmt.Println("/etc/aegis/setup/connect-vlans", "--uni", "--vid1", strconv.Itoa(connection[0]), "--vid2", strconv.Itoa(connection[1]))
+        cmd = exec.Command("/etc/aegis/setup/connect-vlans", "--uni", "--vid1", strconv.Itoa(connection[0]), "--vid2", strconv.Itoa(connection[1]))
         output, err = cmd.CombinedOutput()
         if err != nil {
             helpers.LogE("Error connecting vlans: ", "/root/connect-vlans", "--uni", "--vid1", strconv.Itoa(connection[0]), "--vid2", strconv.Itoa(connection[1]), string(output), "Exiting")

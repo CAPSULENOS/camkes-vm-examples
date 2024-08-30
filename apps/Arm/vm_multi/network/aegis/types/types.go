@@ -89,8 +89,8 @@ func (f FunctionalityInfo) BuildRouterNode() error {
             return NewBuildRouterError(fmt.Sprintf("IP set in router not in subnet assigned to ingest path in subnet %v", subnet)); 
         }
 
-        fmt.Println("/root/generate-client-vlan", "--node", node, "--dev", "eth0", "--ip", ip, "--vid", strconv.Itoa(vlan))
-        cmd := exec.Command("/root/generate-client-vlan", "--node", node, "--dev", "eth0", "--ip", ip, "--vid", strconv.Itoa(vlan))
+        fmt.Println("/etc/aegis/setup/generate-client-vlan", "--node", node, "--dev", "eth0", "--ip", ip, "--vid", strconv.Itoa(vlan))
+        cmd := exec.Command("/etc/aegis/setup/generate-client-vlan", "--node", node, "--dev", "eth0", "--ip", ip, "--vid", strconv.Itoa(vlan))
         output, err := cmd.CombinedOutput()
         if err != nil {
             fmt.Println("Error generating vlans on client: ", string(output), "Exiting")
@@ -101,8 +101,8 @@ func (f FunctionalityInfo) BuildRouterNode() error {
     // Set up the forwarding path on the remote host
     for _, link := range f.ForwardingPaths {
         raw_ip := strings.Split(link.IP, "/")[0]
-        fmt.Println("/root/add-route", "--node", node, "--to", link.To, "--via", raw_ip)
-        cmd := exec.Command("/root/add-route", "--node", node, "--to", link.To, "--via", raw_ip)
+        fmt.Println("/etc/aegis/setup/add-route", "--node", node, "--to", link.To, "--via", raw_ip)
+        cmd := exec.Command("/etc/aegis/setup/add-route", "--node", node, "--to", link.To, "--via", raw_ip)
         output, err := cmd.CombinedOutput()
         if err != nil {
             fmt.Println("Error adding route on remote node: ", string(output), "Exiting")
@@ -132,7 +132,7 @@ func (f FunctionalityInfo) BuildSilentNode() error {
 
     for _, vlans := range f.Vlans {
         fmt.Println("/root/silent", "--uni", "--node", node, "--dev", "eth0", "--vid1", strconv.Itoa(vlans[0]), "--vid2", strconv.Itoa(vlans[1]))
-        cmd := exec.Command("/root/silent", "--uni", "--node", node, "--dev", "eth0", "--vid1", strconv.Itoa(vlans[0]), "--vid2", strconv.Itoa(vlans[1]))
+        cmd := exec.Command("/etc/aegis/vnfs/silent", "--uni", "--node", node, "--dev", "eth0", "--vid1", strconv.Itoa(vlans[0]), "--vid2", strconv.Itoa(vlans[1]))
         output, err := cmd.CombinedOutput()
         if err != nil {
             fmt.Println("Error implementing a silent node: ", string(output), "Exiting")
