@@ -210,13 +210,6 @@ AddFileToOverlayDir(
     "root"
     overlay_vm0
 )
-AddFileToOverlayDir(
-    "aegis-conf.yml"
-    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
-    "root"
-    overlay_vm0
-)
-
 
 
 AddFileToOverlayDir(
