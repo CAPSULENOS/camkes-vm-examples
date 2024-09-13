@@ -26,14 +26,16 @@ func PopulateFunctionSettings(network_settings Config) (map[string]Functionality
 }
 
 
-func FinalizeFunctionSettings(function_map map[string]FunctionalityInfo, function_name string, ingest IngestInfo, available_nodes []NodeInfo, new_vids [2]int) map[string]FunctionalityInfo {
+func FinalizeFunctionSettings(function_map map[string]FunctionalityInfo, function_name string, ingest_node_name string, available_nodes []NodeInfo, new_vids [2]int) map[string]FunctionalityInfo {
 
     settings := function_map[function_name]
 
     switch settings.Type {
         case "router":
-            if len(settings.SubnetToVlan) == 0 { settings.SubnetToVlan = make(map[string]int) }
-            settings.SubnetToVlan[ingest.Subnet] = new_vids[0]
+            for i, interfaces := range settings.Interfaces {
+                if interfaces.Dev != ingest_node_name { continue }
+                settings.Interfaces[i].Vlan = new_vids[0]
+            }
         case "silent":
             if len(settings.Vlans) == 0 { 
                 settings.Vlans = [][2]int{ new_vids } 
@@ -102,7 +104,7 @@ func populateFieldsNecessaryToBuildInternalDataPath(internal_path []string, func
         // Assign VIDs to a given function
         new_vids := [2]int{vid_index, vid_index + 1}
 
-        function_settings = FinalizeFunctionSettings(function_settings, function_name, datapath_settings.Ingest, available_nodes, new_vids)
+        function_settings = FinalizeFunctionSettings(function_settings, function_name, datapath_settings.Path[0], available_nodes, new_vids)
 
         if last_vid > 0 {
             datapath_settings.Connections =  append(datapath_settings.Connections, [2]int{last_vid, vid_index})
@@ -115,3 +117,4 @@ func populateFieldsNecessaryToBuildInternalDataPath(internal_path []string, func
 
     return function_settings, datapath_settings, vid_index, last_vid, nil
 }
+

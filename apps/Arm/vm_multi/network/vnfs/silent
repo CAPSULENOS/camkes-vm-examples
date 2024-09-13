@@ -10,7 +10,7 @@ node=""
 show_help() {
     echo "Makes a node silently forward vlan packets from one network to another using vanilla linux on a remote host"
     echo
-    echo "Usage: $0 [options] node dev vid1 vid2"
+    echo "Usage: $0 [options] --node node --dev dev --vid1 vid1 --vid2 vid2"
     echo
     echo "Options:"
     echo "  --bi,    Allow bidirectional flow"
@@ -58,28 +58,12 @@ while [[ $# -gt 0 ]]; do
         show_help
         exit 0
         ;;
+    *)
+        echo "Unknown paramter $1"
+        shift
+        ;;
   esac
 done
-
-
-# Parse positional arguments
-if [[ -z $node && $# -ge 1 ]]; then
-    node="$1"
-    shift
-fi
-
-if [[ -z $dev&& $# -ge 1 ]]; then
-    bridge="$1"
-    shift
-fi
-if [[ -z $vid1 && $# -ge 1 ]]; then
-    vid1="$1"
-    shift
-fi
-if [[ -z $vid2 && $# -ge 1 ]]; then
-    vid2="$1"
-    shift
-fi
 
 
 # Verify we have all the arguments

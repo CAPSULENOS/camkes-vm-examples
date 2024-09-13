@@ -16,7 +16,7 @@ type Config  = types.Config
 
 func main() {
 
-    config_file := "/root/aegis-conf.yml"
+    config_file := "/etc/aegis/aegis-conf.yml"
 
     // Read the config file
     var network_settings Config
@@ -64,6 +64,9 @@ func main() {
 
     for name, datapath_settings := range network_settings.DataPaths {
         helpers.LogE("Setting up Data Path:", name)
+
+        // Set up ingest data:
+        datapath_settings.Ingest = network_settings.Ingest[datapath_settings.Path[0]]
 
         // Add the ingest connection 
         datapath_settings.Connections = [][2]int{[2]int{datapath_settings.Ingest.Vlan, vid_index}}

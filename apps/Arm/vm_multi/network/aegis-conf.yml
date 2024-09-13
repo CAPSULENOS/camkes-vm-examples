@@ -1,36 +1,41 @@
 local_vms: 3
-
+ingest:
+  camera:
+    subnet: ""
+    vlan: 3000
+  gpu:
+    subnet: ""
+    vlan: 3001
+  random_node:
+    subnet: ""
+    vlan: 5000
 functions:
   router:
     internal_router:
-      links:
-        - from: 192.168.100.0/24
-          to: 192.168.200.0/24
-          ip: 192.168.100.1/24
-        - from: 192.168.200.0/24
-          to: 192.168.100.0/24
-          ip: 192.168.200.1/24
-
+      name: internal_router
+      type: router
+      routes:
+      - to: 192.168.250.0/24
+        via: 192.168.200.2
+      interfaces:
+      - dev: camera
+        addr: 192.168.100.1/24
+      - dev: gpu
+        addr: 192.168.200.1/24
+  silent:
+    silent1: null
 data_paths:
-  node_one_router:
-    ingest: 
-      subnet: 192.168.100.0/24
-      vlan: 3000
-    type: bidirectional
-    path:
-      - camera
-      - internal_router
-
   node_two_router:
-    ingest:
-      subnet: 192.168.200.0/24
-      vlan: 3001
     type: bidirectional
     path:
-      - gpu
-      - internal_router
-
+    - gpu
+    - internal_router
+  node_one_router:
+    type: bidirectional
+    path:
+    - camera
+    - silent1
+    - internal_router
 debug:
   order_vlans: true
   verbose: true
-

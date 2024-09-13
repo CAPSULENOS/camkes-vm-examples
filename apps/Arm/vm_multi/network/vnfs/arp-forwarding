@@ -1,0 +1,29 @@
+#!/bin/sh
+
+dev=eth0
+
+# Help menu
+show_help() {
+    echo "Makes a node forward arps between vlan sub-interfaces"
+    echo
+    echo "Usage: $0 [options] --dev dev"
+    echo
+    echo "Options:"
+    echo "  --dev,   Specify the device to draw subinterfaces from (ie all eth0.X)"
+    echo "  --help,  Print this help menu"
+}
+
+
+interfaces=$(ip -o link show | awk -F': ' '{print $2}' | sed 's/@.*//' | grep -E "^$dev\.[0-9]+$")
+
+# Check if any $dev.X interfaces were found
+if [ -z "$interfaces" ]; then
+    error "No $dev.X interfaces found. Exiting."
+    exit 1
+fi
+
+# Enable Proxy ARP on each $dev.X interface
+for iface in $interfaces; do
+    info "Enabling Proxy ARP on interface $iface..."
+    echo 1 > /proc/sys/net/ipv4/conf/$iface/proxy_arp
+done

@@ -171,37 +171,38 @@ AddFileToOverlayDir(
 AddFileToOverlayDir(
     "wireguard-interface.sh"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/wireguard-interface.sh
-    "etc/aegis/setup"
+    "etc/aegis/scripts"
     overlay_vm0
 )
 AddFileToOverlayDir(
     "generate-client-vlan"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/generate-client-vlan
-    "etc/aegis/setup"
+    "etc/aegis/scripts"
     overlay_vm0
 )
 AddFileToOverlayDir(
     "connect-vlans"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/connect-vlans
-    "etc/aegis/setup"
+    "etc/aegis/scripts"
     overlay_vm0
 )
 AddFileToOverlayDir(
     "remote-etc-hosts"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/remote-etc-hosts
-    "etc/aegis/setup"
+    "etc/aegis/scripts"
     overlay_vm0
 )
 AddFileToOverlayDir(
     "silent"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/silent
-    "etc/aegis/vnfs"
+    "etc/aegis/scripts"
     overlay_vm0
 )
+
 AddFileToOverlayDir(
     "add-route"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/add-route
-    "etc/aegis/vnfs"
+    "etc/aegis/scripts"
     overlay_vm0
 )
 AddFileToOverlayDir(
@@ -211,6 +212,18 @@ AddFileToOverlayDir(
     overlay_vm0
 )
 
+AddFileToOverlayDir(
+    "aegis-conf.yml"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
+    "etc/aegis"
+    overlay_vm0
+)
+AddFileToOverlayDir(
+    "arp-forwarding"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/arp-forwarding
+    "etc/aegis/scripts"
+    overlay_client_vm
+)
 
 AddFileToOverlayDir(
     "privkey"
