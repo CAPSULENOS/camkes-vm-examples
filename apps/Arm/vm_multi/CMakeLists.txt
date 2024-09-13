@@ -198,7 +198,12 @@ AddFileToOverlayDir(
     "etc/aegis/scripts"
     overlay_vm0
 )
-
+AddFileToOverlayDir(
+    "add-ip-forward"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/add-ip-forward
+    "etc/aegis/scripts"
+    overlay_vm0
+)
 AddFileToOverlayDir(
     "add-route"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/add-route

@@ -125,6 +125,15 @@ func (f FunctionalityInfo) BuildRouterNode() error {
         return err
     }
 
+    // Add ipv4 forwarding on a remote host
+    fmt.Println("/etc/aegis/scripts/add-ip-forward", "--node", node)
+    cmd = exec.Command("/etc/aegis/scripts/add-ip-forward", "--node", node)
+    output, err = cmd.CombinedOutput()
+    if err != nil {
+        fmt.Println("Error adding ipv4 forwarding on remote node: ", string(output), err, "Exiting")
+        return err
+    }
+
     // Set up the forwarding path on the remote host
     for _, link := range f.Routes {
         fmt.Println("/etc/aegis/scripts/add-route", "--node", node, "--to", link.To, "--via", link.Via)

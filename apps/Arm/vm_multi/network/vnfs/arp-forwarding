@@ -18,12 +18,13 @@ interfaces=$(ip -o link show | awk -F': ' '{print $2}' | sed 's/@.*//' | grep -E
 
 # Check if any $dev.X interfaces were found
 if [ -z "$interfaces" ]; then
-    error "No $dev.X interfaces found. Exiting."
+    echo "No $dev.X interfaces found. Exiting."
     exit 1
 fi
 
 # Enable Proxy ARP on each $dev.X interface
 for iface in $interfaces; do
-    info "Enabling Proxy ARP on interface $iface..."
+    echo "Enabling Proxy ARP on interface $iface..."
     echo 1 > /proc/sys/net/ipv4/conf/$iface/proxy_arp
 done
+
