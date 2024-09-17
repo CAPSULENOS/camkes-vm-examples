@@ -187,6 +187,12 @@ AddFileToOverlayDir(
     overlay_vm0
 )
 AddFileToOverlayDir(
+    "iptables-raw-forwarding"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/iptables-raw-forwarding
+    "etc/aegis/scripts"
+    overlay_vm0
+)
+AddFileToOverlayDir(
     "connect-vlans"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/connect-vlans
     "etc/aegis/scripts"

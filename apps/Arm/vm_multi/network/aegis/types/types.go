@@ -29,6 +29,8 @@ type FunctionalityInfo struct {
     EgressAddr      string                         `yaml:"egress_ip"`
     WgInterface     WgInterface                    `yaml:"interface"`
     Peers           map[string]WgPeer              `yaml:"peers"`
+    // For iptables
+    Setup           []string                       `yaml:"setup"`
     // For assigning to physical nodes
     PhysicalNode   *NodeInfo
 }
@@ -263,7 +265,6 @@ func (f FunctionalityInfo) BuildWireGuardNode() error {
         }
         // remove trailing comma
         allowed_ips = allowed_ips[:len(allowed_ips) - 1]
-        fmt.Println("Peer name:", name);
         fmt.Println("sshpass", "-p", "root", "dbclient", "-y", node,
             "wg", "set", interface_name, "peer", peer_settings.PublicKey, 
                                 "allowed-ips", allowed_ips, "endpoint", peer_settings.Endpoint)
@@ -295,4 +296,59 @@ func (f FunctionalityInfo) BuildWireGuardNode() error {
     return nil
 }
 
+func (f FunctionalityInfo) BuildIptablesNode() error {
+    node := f.PhysicalNode.Sel4IP
+
+    // Set up ingest interface
+    fmt.Println("/etc/aegis/scripts/generate-client-vlan", "--node", node, "--dev", "eth0", "--vid", strconv.Itoa(f.Vlans[0][0]))
+    cmd := exec.Command("/etc/aegis/scripts/generate-client-vlan", "--node", node, "--dev", "eth0", "--vid", strconv.Itoa(f.Vlans[0][0]))
+    output, err := cmd.CombinedOutput()
+    if err != nil {
+        fmt.Println("Error generating vlans on client: ", string(output), "Exiting")
+        return err
+    }
+
+    // Set up egress interface
+    fmt.Println("/etc/aegis/scripts/generate-client-vlan", "--node", node, "--dev", "eth0", "--vid", strconv.Itoa(f.Vlans[0][1]))
+    cmd = exec.Command("/etc/aegis/scripts/generate-client-vlan", "--node", node, "--dev", "eth0", "--vid", strconv.Itoa(f.Vlans[0][1]))
+    output, err = cmd.CombinedOutput()
+    if err != nil {
+        fmt.Println("Error generating vlans on client: ", string(output), "Exiting")
+        return err
+    }
+
+    // Set up arp forwarding on the node
+    cmd_text := fmt.Sprintf("/etc/aegis/scripts/arp-forwarding --dev eth0")
+    fmt.Println("sshpass", "-p", "root", "ssh", node, cmd_text)
+
+    cmd = exec.Command("sshpass", "-p", "root", "ssh", node, cmd_text)
+    output, err = cmd.CombinedOutput()
+    if err != nil {
+        fmt.Println("Error adding arp forwarding on remote node: ", string(output), "Exiting")
+        return err
+    }
+
+    // Enable IPv4 forwarding
+    fmt.Println("/etc/aegis/scripts/add-ip-forward", "--node", node)
+    cmd = exec.Command("/etc/aegis/scripts/add-ip-forward", "--node", node)
+    output, err = cmd.CombinedOutput()
+    if err != nil {
+        fmt.Println("Error adding ipv4 forwarding on remote node: ", string(output), err, "Exiting")
+        return err
+    }
+
+    // Enable forwarding between the VLANs using iptables
+    fmt.Println("/etc/aegis/scripts/iptables-raw-forwarding", "--node", node, "--vid1", strconv.Itoa(f.Vlans[0][0]), "--vid2", strconv.Itoa(f.Vlans[0][1]))
+    cmd = exec.Command("/etc/aegis/scripts/iptables-raw-forwarding", "--node", node, "--vid1", strconv.Itoa(f.Vlans[0][0]), "--vid2", strconv.Itoa(f.Vlans[0][1]))
+    output, err = cmd.CombinedOutput()
+    if err != nil {
+        fmt.Println("Error adding iptables raw forwarding on remote node: ", string(output), err, "Exiting")
+        return err
+    }
+
+
+
+
+    return nil
+}
 

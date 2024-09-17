@@ -1,46 +1,33 @@
 # Add functionality to catch nil ptr reference if function is defined but not used
-
 local_vms: 3
 functions:
   router:
     internal_router:
-      routes:
-        - to: 192.168.81.0/24
-          via: 192.168.30.1
       interfaces:
         - dev: camera
-          addr: 192.168.80.1/24
-        - dev: r2
-          addr: 192.168.30.1/24
+          addr: 192.168.100.1/24
+        - dev: gpu 
+          addr: 192.168.200.1/24
 
-  wireguard:
-    wgR1:
-      ingest_ip: 192.168.100.1/24
-      egress_ip: 192.168.80.10/24
-      interface:
-        name: "wg0"
-        private_key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEE=
-        address: 10.10.10.1/24 # virtual address wireguard sets up
-        port: 5891
-      peers:
-        peer1:
-          public_key: fE/wdxzl0klVp/IR8UcaoGUMjqaWi3jAd7KzHKFS6Ds=
-          allowed_ips: 
-            - 192.168.200.0/24 # Traffic to route through the tunnel
-          endpoint: 192.168.81.10:5891 # A peer in the VPN network
+  iptables:
+    firewall1:
+      setup: 
+        - iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+
 
 data_paths:
   node_one_router:
     type: bidirectional
+    ingest:
     path:
       - camera
-      - wgR1
+      - firewall1
       - internal_router
 
-  router_to_router:
+  node_two_router:
     type: bidirectional
     path:
-      - r2
+      - gpu
       - internal_router
 
 

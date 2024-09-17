@@ -36,13 +36,7 @@ func FinalizeFunctionSettings(function_map map[string]FunctionalityInfo, functio
                 if interfaces.Dev != ingest_node_name { continue }
                 settings.Interfaces[i].Vlan = new_vids[0]
             }
-        case "silent":
-            if len(settings.Vlans) == 0 { 
-                settings.Vlans = [][2]int{ new_vids } 
-            } else {
-                settings.Vlans = append(settings.Vlans, new_vids)
-            }
-        case "wireguard":
+        case "silent", "wireguard", "iptables":
             if len(settings.Vlans) == 0 { 
                 settings.Vlans = [][2]int{ new_vids } 
             } else {

@@ -91,17 +91,6 @@ func main() {
         last_vid -= 1
         vid_index -= 1
 
-        /*
-        // Build the reverse data path
-        reverseInternalPath := datapath_settings.Path[1:len(datapath_settings.Path) - 1]
-        function_settings, datapath_settings, vid_index, last_vid, err = functionality.FinalizeInternalReversePath(reverseInternalPath, function_settings, datapath_settings, available_nodes, vid_index, last_vid)
-        if err != nil {
-            helpers.LogE("Error building internal reverse data path", err)
-        }
-
-        // Add the reverse egress path
-        datapath_settings.Connections = append(datapath_settings.Connections, [2]int{last_vid, datapath_settings.Ingest.Vlan})
-        */
         // Save those settings
         network_settings.DataPaths[name] = datapath_settings
     }
