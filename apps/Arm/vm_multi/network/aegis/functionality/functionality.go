@@ -42,6 +42,12 @@ func FinalizeFunctionSettings(function_map map[string]FunctionalityInfo, functio
             } else {
                 settings.Vlans = append(settings.Vlans, new_vids)
             }
+        case "wireguard":
+            if len(settings.Vlans) == 0 { 
+                settings.Vlans = [][2]int{ new_vids } 
+            } else {
+                settings.Vlans = append(settings.Vlans, new_vids)
+            }
         default:
             return function_map
     }
@@ -91,7 +97,6 @@ func (e *BuildInternalPathError) Error() string {
 func NewBuildInternalPathError(message string) *BuildInternalPathError {
     return &BuildInternalPathError{s: message}
 }
-
 
 func populateFieldsNecessaryToBuildInternalDataPath(internal_path []string, function_settings map[string]FunctionalityInfo, datapath_settings DataPath, available_nodes []NodeInfo, vid_index int, last_vid int) (map[string]FunctionalityInfo, DataPath, int, int, error) {
     for _, function_name := range internal_path {

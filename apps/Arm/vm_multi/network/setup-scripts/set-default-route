@@ -1,0 +1,49 @@
+#!/bin/sh
+
+InterfaceName="eth0"
+Address=""
+node=""
+
+
+# Help menu
+show_help() {
+    echo "Reset the default route on a remote machine"
+    echo
+    echo "Usage: $0 --node <node> --addr <IP address> --dev <interface>"
+    echo
+}
+
+
+# Parse CLI flag arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --dev)
+        shift
+        InterfaceName="$1"
+        shift
+        ;;
+    --node)
+        shift
+        node="$1"
+        shift
+        ;;
+    --addr)
+        shift
+        Address="$1"
+        shift
+        ;;
+    *)
+        echo "Unknown cli entered"
+        exit 1
+  esac
+done
+
+
+# Set pubkey in wireguard
+echo sshpass -p "root" dbclient -y "$node" "ip route del default"
+sshpass -p "root" dbclient -y "$node" "ip route del default"
+
+# Add a wireguard interface
+echo sshpass -p "root" dbclient -y "$node" "ip route add default via $Address dev $InterfaceName"
+sshpass -p "root" dbclient -y "$node" "ip route add default via $Address dev $InterfaceName"
+

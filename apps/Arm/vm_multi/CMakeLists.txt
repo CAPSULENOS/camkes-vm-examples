@@ -175,6 +175,12 @@ AddFileToOverlayDir(
     overlay_vm0
 )
 AddFileToOverlayDir(
+    "set-default-route"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/set-default-route
+    "etc/aegis/scripts"
+    overlay_vm0
+)
+AddFileToOverlayDir(
     "generate-client-vlan"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/setup-scripts/generate-client-vlan
     "etc/aegis/scripts"
