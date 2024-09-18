@@ -145,17 +145,6 @@ func (f FunctionalityInfo) BuildRouterNode() error {
     return nil
 }
 
-/*
-type BuildSilentError struct {
-    s string
-}
-
-func (e *BuildSilentError) Error() string {
-    return e.s
-}
-
-*/
-
 func (f FunctionalityInfo) BuildSilentNode() error {
     node := f.PhysicalNode.Sel4IP
 

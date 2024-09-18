@@ -235,12 +235,20 @@ AddFileToOverlayDir(
     "etc/aegis"
     overlay_vm0
 )
+
 AddFileToOverlayDir(
     "arp-forwarding"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/arp-forwarding
     "etc/aegis/scripts"
     overlay_client_vm
 )
+AddFileToOverlayDir(
+    "clean"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/clean
+    "etc/aegis/scripts"
+    overlay_client_vm
+)
+
 
 AddFileToOverlayDir(
     "privkey"

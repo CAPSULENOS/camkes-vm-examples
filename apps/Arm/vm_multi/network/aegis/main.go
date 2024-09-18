@@ -1,8 +1,11 @@
 package main
 
 import (
+    "os"
+    "fmt"
     "time"
     "orchestration/helpers"
+    "orchestration/takedown"
     "orchestration/types"
     "orchestration/functionality"
     "orchestration/nodes"
@@ -16,7 +19,34 @@ type Config  = types.Config
 
 func main() {
 
+    if len(os.Args[1:]) == 0 {
+        helpMenu()
+        return
+    }
+
     config_file := "/etc/aegis/aegis-conf.yml"
+    lease_file := "/var/run/dnsmasq-br0.leases"
+
+    switch os.Args[1] {
+        case "start":
+            StartAegis(config_file, lease_file)
+
+        case "stop":
+            takedown.StopAegis(lease_file)
+
+        default: 
+            helpMenu()
+    }
+
+}
+
+func helpMenu() {
+    fmt.Println("aegis [options]")
+    fmt.Println("  start   Start Aegis")
+    fmt.Println("  stop    Stop Aegis")
+}
+
+func StartAegis(config_file string, lease_file string) {
 
     // Read the config file
     var network_settings Config
@@ -35,7 +65,6 @@ func main() {
     // Get physical nodes to allocate VNF functionality to
     var available_nodes []NodeInfo
 
-    lease_file := "/var/run/dnsmasq-br0.leases"
 
     available_nodes, err = nodes.GetAvailableNodes(lease_file)
     for len(available_nodes) < network_settings.NumberOfVms || err != nil {
@@ -112,6 +141,5 @@ func main() {
             return
         }
     }
-
 }
-    
+
