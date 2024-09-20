@@ -27,19 +27,13 @@ endif()
 # Generate our overlayed rootfs images
 set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/rootfs.cpio.gz")
 
-# Setup our passthrough vm overlay
-#AddFileToOverlayDir(
-#    "inittab"
-#    ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/inittab_hvc0
-#    "etc"
-#    overlay_vm0
-#)
 AddFileToOverlayDir(
     "S90bridge_setup"
     ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/vm0_bridge_setup.sh
     "etc/init.d"
     overlay_vm0
 )
+
 AddOverlayDirToRootfs(
     overlay_vm0
     ${rootfs_file}
@@ -49,121 +43,6 @@ AddOverlayDirToRootfs(
     rootfs_target_vm0
     GZIP
 )
-
-# Setup our client vm overlays
-#AddFileToOverlayDir(
-#    "inittab"
-#    ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/inittab_hvc0
-#    "etc"
-#    overlay_client_vm
-#)
-
-
-# Add startup dropbear script to client_vm
-AddFileToOverlayDir(
-    "authorized_keys"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/authorized_keys
-    "etc/dropbear"
-    overlay_client_vm
-)
-AddFileToOverlayDir(
-    "id_rsa.pub"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/id_rsa.pub
-    "home/root/.ssh"
-    overlay_client_vm
-)
-AddFileToOverlayDir(
-    "id_rsa"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/id_rsa
-    "home/root/.ssh"
-    overlay_client_vm
-)
-AddFileToOverlayDir(
-    "dropbear_rsa_host_key.pub"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/dropbear_rsa_host_key.pub
-    "etc/dropbear"
-    overlay_client_vm
-)
-AddFileToOverlayDir(
-    "dropbear_rsa_host_key"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/dropbear_rsa_host_key
-    "etc/dropbear"
-    overlay_client_vm
-)
-AddFileToOverlayDir(
-    "StartDropbear"
-    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/StartDropbear
-    "etc/init.d"
-    overlay_client_vm
-)
-
-# Add startup dropbear script to vm0
-AddFileToOverlayDir(
-    "authorized_keys"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/authorized_keys
-    "etc/dropbear"
-    overlay_vm0
-)
-AddFileToOverlayDir(
-    "id_rsa.pub"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/id_rsa.pub
-    "home/root/.ssh"
-    overlay_vm0
-)
-AddFileToOverlayDir(
-    "id_rsa"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/id_rsa
-    "home/root/.ssh"
-    overlay_vm0
-)
-AddFileToOverlayDir(
-    "dropbear_rsa_host_key.pub"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/dropbear_rsa_host_key.pub
-    "etc/dropbear"
-    overlay_vm0
-)
-AddFileToOverlayDir(
-    "dropbear_rsa_host_key"
-    ${CMAKE_CURRENT_SOURCE_DIR}/dropbear/dropbear_rsa_host_key
-    "etc/dropbear"
-    overlay_vm0
-)
-AddFileToOverlayDir(
-    "StartDropbear"
-    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/StartDropbear
-    "etc/init.d"
-    overlay_vm0
-)
-
-
-
-AddFileToOverlayDir(
-    ".profile"
-    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/.profile
-    "root"
-    overlay_client_vm
-)
-
-AddFileToOverlayDir(
-    ".profile"
-    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/.profile
-    "root"
-    overlay_vm0
-)
-
-# AddFileToOverlayDir(
-#     "hosts"
-#     ${CMAKE_CURRENT_SOURCE_DIR}/scripts/hosts
-#     "etc"
-#     overlay_client_vm
-# )
-# 
-# AddFileToOverlayDir(
-#     "hosts"
-#     ${CMAKE_CURRENT_SOURCE_DIR}/scripts/hosts
-#     "etc"
-#     overlay_vm0
-# )
 
 
 
@@ -224,17 +103,13 @@ AddFileToOverlayDir(
 )
 AddFileToOverlayDir(
     "aegis"
-    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis/aegis
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis
     "root"
     overlay_vm0
 )
 
-AddFileToOverlayDir(
-    "aegis-conf.yml"
-    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
-    "etc/aegis"
-    overlay_vm0
-)
+
+
 
 AddFileToOverlayDir(
     "arp-forwarding"
@@ -248,15 +123,12 @@ AddFileToOverlayDir(
     "etc/aegis/scripts"
     overlay_client_vm
 )
-
-
 AddFileToOverlayDir(
-    "privkey"
-    ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/wg-privkey
-    "etc/wireguard"
+    "aegis-conf.yml"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
+    "etc/aegis"
     overlay_vm0
 )
-
 AddFileToOverlayDir(
     "S90client_net_vm"
     ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/vm_client_net_setup.sh
