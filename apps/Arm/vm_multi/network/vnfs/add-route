@@ -1,0 +1,67 @@
+#!/bin/sh
+
+node=""
+to=""
+via=""
+
+
+# Help menu
+show_help() {
+    echo "Adds a new forwarding rule on a remote device"
+    echo
+    echo "Usage: $0 [options] --node node --to to --via via"
+    echo
+    echo "Options:"
+    echo "  --node,   Specify the node to add this forwarding rule to"
+    echo "  --to,   Specify the subnet this node is forwarding from"
+    echo "              Ex: 192.169.20.0/24"
+    echo "  --via,    Specify IP you want to forward this route to"
+    echo "              Ex: 192.168.10.1"
+    echo "  --help,  Print this help menu"
+}
+
+
+# Parse CLI
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --node)
+        shift
+        node="$1"
+        shift
+        ;;
+    --to)
+        shift
+        to="$1"
+        shift
+        ;;
+    --via)
+        shift
+        via="$1"
+        shift
+        ;;
+    --help)
+        show_help
+        exit 0
+        ;;
+  esac
+done
+
+# Verify we have all the arguments
+if [[ -z $node || -z $to || -z $via ]]; then
+    echo "Error: node, from, and via are required."
+    show_help
+    exit 1
+fi
+
+
+echo sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
+sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
+
+echo sshpass -p "root" dbclient -y "$node" "ip route add $to via $via"
+sshpass -p "root" dbclient -y "$node" "ip route add $to via $via"
+
+# Enable arp proxy so vlans forward it properly
+# find_interface="ip -o -4 addr list | grep $to | awk '{print \$2}'"
+# echo sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/conf/\$($find_interface)/proxy_arp"
+# sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/conf/\$($find_interface)/proxy_arp"
+

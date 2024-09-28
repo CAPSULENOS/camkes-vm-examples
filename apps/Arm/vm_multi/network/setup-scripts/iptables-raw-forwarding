@@ -1,0 +1,58 @@
+#!/bin/sh
+
+node=""
+vid1=""
+vid2=""
+
+# Help menu
+show_help() {
+    echo "Enable forwarding between two vlan tags on the current node"
+    echo
+    echo "Usage: $0 [options] bridge vid1 vid2"
+    echo
+    echo "Options:"
+    echo "  --node,  Specify node you'd like to apply raw interface forwarding on"
+    echo "  --vid1,  Specify the vlan id to forward from"
+    echo "  --vid2,  Specify the vlan id to forward to"
+    echo "  --help,  Print this help menu"
+}
+
+
+# Parse CLI flag arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --node)
+        shift
+        node=$1
+        shift
+        ;;
+    --vid1)
+        shift
+        vid1="$1"
+        shift
+        ;;
+    --vid2)
+        shift
+        vid2="$1"
+        shift
+        ;;
+    --help)
+        show_help
+        exit 0
+        ;;
+    *)
+        echo "Unknown cli: $1. Exiting"
+        exit 1
+  esac
+done
+
+# Verify we have all the arguments
+if [[ -z $node || -z $vid1 || -z $vid2 ]]; then
+    echo "Error: node, vid1, and vid2 are required."
+    show_help
+    exit 1
+fi
+
+sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i eth0.$vid1 -o eth0.$vid2 -j ACCEPT"
+sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i eth0.$vid2 -o eth0.$vid1 -j ACCEPT"
+

@@ -1,0 +1,81 @@
+ingest:
+  camera:
+    vlan: 3000
+  r2:
+    vlan: 3004
+  speaker:
+    vlan: 3001
+local_vms: 3
+vnfs:
+  internal_router:
+    type: router
+    routes:
+      - to: 192.168.200.0/24
+        via: 192.168.80.10
+      - to: 192.168.201.0/24
+        via: 192.168.80.10
+      - to: 10.20.10.0/24
+        via: 192.168.80.10
+    interfaces:
+      - dev: camera
+        addr: 192.168.100.1/24
+      - dev: speaker
+        addr: 192.168.101.1/24
+      - dev: r2
+        addr: 192.168.80.1/24
+
+  wgR1:
+    type: wireguard
+    ingest_ip: 192.168.30.1/24
+    egress_ip: 192.168.80.10/24
+    interface:
+      name: "wg0"
+      private_key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEE=
+      address: 10.20.10.1/24 # virtual address wireguard sets up
+      port: 5891
+    routes:
+      - to: 192.168.200.0/24
+        via: 10.20.10.2
+      - to: 192.168.201.0/24
+        via: 10.20.10.2
+    peers:
+      peer1:
+        public_key: fE/wdxzl0klVp/IR8UcaoGUMjqaWi3jAd7KzHKFS6Ds=
+        allowed_ips: 
+          # - 192.168.200.2/24 # Traffic to route through the tunnel
+          - 0.0.0.0/0
+        endpoint: 192.168.30.2:5891 # A peer in the VPN network
+
+  firewall1:
+    type: iptables
+    setup: 
+      - iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+
+  silent1:
+    type: silent
+
+
+
+data_paths:
+  node_one_router:
+    type: bidirectional
+    path:
+      - camera
+      - silent1
+      - internal_router
+
+  node_two_router:
+    type: bidirectional
+    path:
+      - speaker
+      - firewall1
+      - internal_router
+
+  wireguard_exit:
+    type: bidirectional
+    path:
+      - r2
+      - wgR1
+      - internal_router
+
+

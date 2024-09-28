@@ -49,32 +49,16 @@ while [[ $# -gt 0 ]]; do
         show_help
         exit 0
         ;;
+    *)
+        echo "Unknown cli: $1. Exiting"
+        exit 1
   esac
 done
 
 
-# Parse positional arguments
-if [[ -z $node && $# -ge 1 ]]; then
-    node="$1"
-    shift
-fi
-if [[ -z $dev && $# -ge 1 ]]; then
-    dev="$1"
-    shift
-fi
-if [[ -z $ip && $# -ge 1 ]]; then
-    ip="$1"
-    shift
-fi
-if [[ -z $vid && $# -ge 1 ]]; then
-    vid="$1"
-    shift
-fi
-
-
 # Verify we have all the arguments
-if [[ -z $node || -z $dev || -z $ip || -z $vid ]]; then
-    echo "Error: node, dev, ip, and vid are required."
+if [[ -z $node || -z $dev || -z $vid ]]; then
+    echo "Error: node, dev, and vid are required."
     show_help
     exit 1
 fi
@@ -83,9 +67,15 @@ fi
 sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 echo sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 
+random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid address $random_mac"
+echo sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid address $random_mac"
+
 sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid up"
 echo sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid up"
 
-sshpass -p "root" dbclient -y $node "ip addr add $ip dev $dev.$vid"
-echo sshpass -p "root" dbclient -y $node "ip addr add $ip dev $dev.$vid"
+if [ -n "$ip" ]; then
+    sshpass -p "root" dbclient -y $node "ip addr add $ip dev $dev.$vid"
+    echo sshpass -p "root" dbclient -y $node "ip addr add $ip dev $dev.$vid"
+fi
 

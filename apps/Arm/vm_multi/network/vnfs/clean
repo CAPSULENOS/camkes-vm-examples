@@ -1,0 +1,70 @@
+#!/bin/sh
+
+interfaces=$(ip -o link show | awk -F': ' '{print $2}' | sed 's/@.*//' | grep -E "^eth0\.[0-9]+$")
+
+# Check if any $dev.X interfaces were found
+if [ -z "$interfaces" ]; then
+    echo "No $dev.X interfaces found. Exiting."
+    exit 0
+fi
+
+# Reset ip forwrding
+echo 0 > /proc/sys/net/ipv4/ip_forward
+
+# Enable Proxy ARP on each $dev.X interface
+for iface in $interfaces; do
+    # Remove all routes associated with the VLAN interface
+    ip route flush dev "$iface"
+
+    # Remove all IP addresses associated with the VLAN interface
+    ip addr flush dev "$iface"
+
+    # Delete the VLAN subinterface
+    ip link delete "$iface"
+
+    # Flush all iptables rules
+    iptables -F
+
+    # Delete all user-defined chains
+    iptables -X
+
+    # Set default chain policies to accept
+    iptables -P INPUT ACCEPT
+    iptables -P FORWARD ACCEPT
+    iptables -P OUTPUT ACCEPT
+
+    echo "Disabling Proxy ARP on interface $iface..."
+    echo 0 > /proc/sys/net/ipv4/conf/$iface/proxy_arp
+done
+
+
+# List all WireGuard interfaces
+wg_interfaces=$(wg show interfaces)
+
+# Bring down and delete each WireGuard interface and associated routes
+for interface in $wg_interfaces; do
+    # Flush routing rules associated with the interface
+    ip route flush dev "$interface"
+
+    # Flush IP rules associated with the interface
+    ip rule del dev "$interface" 2>/dev/null
+
+    # Bring the interface down
+    ip link set dev "$interface" down
+    
+    # Delete the interface
+    ip link delete "$interface"
+done
+
+
+# Get the default gateway provided by DHCP on eth0
+dhcp_gateway=$(ip route show dev eth0 | grep 'default' | awk '{print $3}')
+
+# Check if a default gateway was found
+if [ -n "$dhcp_gateway" ]; then
+    # Set the default route to the DHCP-provided gateway
+    ip route replace default via "$dhcp_gateway" dev eth0
+else
+    echo "No DHCP gateway found on eth0."
+fi
+

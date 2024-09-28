@@ -1,0 +1,48 @@
+#!/bin/sh
+
+node=""
+
+# Parse CLI
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --node)
+        shift
+        node="$1"
+        shift
+        ;;
+    --help)
+        show_help
+        exit 0
+        ;;
+    *)
+        echo "Unknown option entered. Exiting"
+        exit 1
+        ;;
+  esac
+done
+
+
+
+# Help menu
+show_help() {
+    echo "Adds ipv4_forwarding on a remote device"
+    echo
+    echo "Usage: $0 [options] --node node"
+    echo
+    echo "Options:"
+    echo "  --node,   Specify the node to add this forwarding rule to"
+    echo "  --help,  Print this help menu"
+}
+
+
+# Verify we have all the arguments
+if [[ -z $node ]]; then
+    echo "Error: node is required."
+    show_help
+    exit 1
+fi
+
+
+echo sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
+sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
+
