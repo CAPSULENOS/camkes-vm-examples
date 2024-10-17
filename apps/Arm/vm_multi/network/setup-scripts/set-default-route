@@ -40,10 +40,10 @@ done
 
 
 # Set pubkey in wireguard
-echo sshpass -p "root" dbclient -y "$node" "ip route del default"
-sshpass -p "root" dbclient -y "$node" "ip route del default"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip route del default"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip route del default"
 
 # Add a wireguard interface
-echo sshpass -p "root" dbclient -y "$node" "ip route add default via $Address dev $InterfaceName"
-sshpass -p "root" dbclient -y "$node" "ip route add default via $Address dev $InterfaceName"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip route add default via $Address dev $InterfaceName"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip route add default via $Address dev $InterfaceName"
 

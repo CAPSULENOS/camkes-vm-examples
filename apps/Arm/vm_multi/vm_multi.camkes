@@ -1,3 +1,4 @@
+#define CAPSULE_MAC_PREFIX 02:60:F5:1F:E1
 /*
  * Copyright 2017, Data61, CSIRO (ABN 41 687 119 230)
  *

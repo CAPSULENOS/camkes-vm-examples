@@ -17,17 +17,23 @@ DHCPRANGE=10.192.10.100,10.192.10.254
 ovs-vsctl add-br br0
 ovs-vsctl add-port br0 eth0
 ovs-vsctl add-port br0 eth1
+# ovs-vsctl add-port br0 eth0.100
 
 
 ip link set up dev br0
 ip link set up dev eth0
 ip link set up dev eth1
-ip addr add $GATEWAY/24 dev br0
+
+
+ip link add link eth0 name eth0.4094 type vlan id 4094
+ip link set up dev eth0.4094
+ip addr add $GATEWAY/24 dev eth0.4094
+
 
 dnsmasq \
     --strict-order \
     --except-interface=lo \
-    --interface=br0 \
+    --interface="eth0.4094" \
     --listen-address=$GATEWAY \
     --bind-interfaces \
     --dhcp-authoritative  \

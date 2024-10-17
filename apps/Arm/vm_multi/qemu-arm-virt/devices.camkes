@@ -1,3 +1,9 @@
+#ifndef CAPSULE_NODE
+#define VM0_NAME    "r2"
+#else
+#define VM0_NAME    XSTR(CAPSULE_NODE)
+#endif
+
 /*
  * Copyright 2020, Data61, CSIRO (ABN 41 687 119 230)
  *
@@ -8,12 +14,6 @@
 
 #define XSTR(x)     STR(x)
 #define STR(x)      #x
-
-#ifndef CAPSULE_NODE
-#define VM0_NAME    "r1"
-#else
-#define VM0_NAME    XSTR(CAPSULE_NODE)
-#endif
 
 //#define VM_INITRD_MAX_SIZE 0x3200000 //50 MB
 #define VM_INITRD_MAX_SIZE  0xc800000 //200 MB
@@ -89,7 +89,7 @@ assembly {
         };
         vm1.vm_image_config = {
             "kernel_bootcmdline" : "node=vm1",
-            "initrd_name" : "linux-initrd-vm-client",
+            "initrd_name" : "linux-initrd-vm1-client",
             "generate_dtb": true,
             "provide_dtb" : false,
         };
@@ -111,7 +111,7 @@ assembly {
         };
         vm2.vm_image_config = {
             "kernel_bootcmdline" : "node=vm2",
-            "initrd_name" : "linux-initrd-vm-client",
+            "initrd_name" : "linux-initrd-vm2-client",
             "generate_dtb": true,
             "provide_dtb" : false,
         };
@@ -132,7 +132,7 @@ assembly {
         };
         vm3.vm_image_config = {
             "kernel_bootcmdline" : "node=vm3",
-            "initrd_name" : "linux-initrd-vm-client",
+            "initrd_name" : "linux-initrd-vm3-client",
             "generate_dtb": true,
             "provide_dtb" : false,
         };

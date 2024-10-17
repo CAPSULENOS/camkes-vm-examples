@@ -13,6 +13,10 @@ echo 0 > /proc/sys/net/ipv4/ip_forward
 
 # Enable Proxy ARP on each $dev.X interface
 for iface in $interfaces; do
+    if [ "$iface" = "eth0.4094" ]; then
+        continue
+    fi
+
     # Remove all routes associated with the VLAN interface
     ip route flush dev "$iface"
 
@@ -58,13 +62,20 @@ done
 
 
 # Get the default gateway provided by DHCP on eth0
-dhcp_gateway=$(ip route show dev eth0 | grep 'default' | awk '{print $3}')
+dhcp_gateway=$(ip route show dev eth0.4094 | grep 'default' | awk '{print $3}')
 
 # Check if a default gateway was found
 if [ -n "$dhcp_gateway" ]; then
     # Set the default route to the DHCP-provided gateway
-    ip route replace default via "$dhcp_gateway" dev eth0
+    ip route replace default via "$dhcp_gateway" dev eth0.4094
 else
-    echo "No DHCP gateway found on eth0."
+    echo "No DHCP gateway found on eth0.4094"
+fi
+
+
+if command -v ipsec >/dev/null 2>&1; then
+    ipsec stop
+else
+    echo "ipsec command not found, skipping."
 fi
 

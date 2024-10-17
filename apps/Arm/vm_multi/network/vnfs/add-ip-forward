@@ -43,6 +43,6 @@ if [[ -z $node ]]; then
 fi
 
 
-echo sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
-sshpass -p "root" dbclient -y "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "echo 1 > /proc/sys/net/ipv4/ip_forward"
 

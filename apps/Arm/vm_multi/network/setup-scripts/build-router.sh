@@ -9,8 +9,7 @@ ip1="127.0.0.1"
 ip2="127.0.0.1"
 
 # Help menu
-show_help() {
-    echo "Adds an entry into /etc/hosts on a remote host"
+show_help() { echo "Adds an entry into /etc/hosts on a remote host"
     echo
     echo "Usage: $0 [options] host dev1 ip1 dev2 ip2"
     echo
@@ -56,6 +55,9 @@ while [[ $# -gt 0 ]]; do
         show_help
         exit 0
         ;;
+   *)
+       echo "Unknown parameter passed: $1. Exiting"
+       exit 1
   esac
 done
 
@@ -91,36 +93,36 @@ fi
 
 # Set up interface one on the node
 echo ip addr add $ip1 dev $dev_one
-sshpass -p "root" dbclient -y "$host" "ip addr add $ip1 dev $dev_one"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "ip addr add $ip1 dev $dev_one"
 echo ip link set $dev_one up
-sshpass -p "root" dbclient -y "$host" "ip link set $dev_one up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "ip link set $dev_one up"
 
 # Set up interface two on the node
 echo ip addr add $ip2 dev $dev_two
-sshpass -p "root" dbclient -y "$host" "ip addr add $ip2 dev $dev_two"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "ip addr add $ip2 dev $dev_two"
 echo ip link set $dev_two up
-sshpass -p "root" dbclient -y "$host" "ip link set $dev_two up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "ip link set $dev_two up"
 
 
 # Enable IP forwarding
-echo sshpass -p "root" dbclient -y "$host" "echo 1 | tee /proc/sys/net/ipv4/ip_forward"
-sshpass -p "root" dbclient -y "$host" "echo 1 | tee /proc/sys/net/ipv4/ip_forward"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "echo 1 | tee /proc/sys/net/ipv4/ip_forward"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "echo 1 | tee /proc/sys/net/ipv4/ip_forward"
 
-echo sshpass -p "root" dbclient -y "$host" "echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf"
-sshpass -p "root" dbclient -y "$host" "echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.conf"
 
-echo sshpass -p "root" dbclient -y "$host" "sysctl -p"
-sshpass -p "root" dbclient -y "$host" "sysctl -p"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "sysctl -p"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "sysctl -p"
 
 # Allow forwarding from Network 1 to Network 2
-echo sshpass -p "root" dbclient -y "$host" "iptables -A FORWARD -i $dev_one -o $dev_two -j ACCEPT"
-sshpass -p "root" dbclient -y "$host" "iptables -A FORWARD -i $dev_one -o $dev_two -j ACCEPT"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "iptables -A FORWARD -i $dev_one -o $dev_two -j ACCEPT"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "iptables -A FORWARD -i $dev_one -o $dev_two -j ACCEPT"
 
 # Allow forwarding from Network 2 to Network 1
-echo sshpass -p "root" dbclient -y "$host" "iptables -A FORWARD -i $dev_two -o $dev_one -j ACCEPT"
-sshpass -p "root" dbclient -y "$host" "iptables -A FORWARD -i $dev_two -o $dev_one -j ACCEPT"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "iptables -A FORWARD -i $dev_two -o $dev_one -j ACCEPT"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "iptables -A FORWARD -i $dev_two -o $dev_one -j ACCEPT"
 
 # Set up masquerading on the interface
 echo iptables -t nat -A POSTROUTING -o $dev_one -j MASQUERADE
-sshpass -p "root" dbclient -y "$host" "iptables -t nat -A POSTROUTING -o $dev_one -j MASQUERADE"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host" "iptables -t nat -A POSTROUTING -o $dev_one -j MASQUERADE"
 

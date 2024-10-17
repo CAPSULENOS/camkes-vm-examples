@@ -64,18 +64,21 @@ if [[ -z $node || -z $dev || -z $vid ]]; then
 fi
 
 # Add new vlan on remote device
-sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
-echo sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 
-random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
-sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid address $random_mac"
-echo sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid address $random_mac"
+# random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid address $random_mac"
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid address $random_mac"
 
-sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid up"
-echo sshpass -p "root" dbclient -y $node "ip link set dev $dev.$vid up"
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid"
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid"
+
+sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid up"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid up"
 
 if [ -n "$ip" ]; then
-    sshpass -p "root" dbclient -y $node "ip addr add $ip dev $dev.$vid"
-    echo sshpass -p "root" dbclient -y $node "ip addr add $ip dev $dev.$vid"
+    sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip addr add $ip dev $dev.$vid"
+    echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip addr add $ip dev $dev.$vid"
 fi
 

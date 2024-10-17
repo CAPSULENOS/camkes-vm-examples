@@ -75,32 +75,32 @@ Subnet=$(printf "%d.%d.%d.%d/%d\n" "$((i1 & (mask >> 24)))" "$((i2 & (mask >> 16
 
 
 # Set pubkey in wireguard
-echo sshpass -p "root" dbclient -y "$node" "printf '%s' \"$PrivateKey\" | wg pubkey"
-sshpass -p "root" dbclient -y "$node" "printf '%s' $PrivateKey | wg pubkey"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "printf '%s' \"$PrivateKey\" | wg pubkey"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "printf '%s' $PrivateKey | wg pubkey"
 
 # Add a wireguard interface
-echo sshpass -p "root" dbclient -y "$node" "ip link add dev $InterfaceName type wireguard"
-sshpass -p "root" dbclient -y "$node" "ip link add dev $InterfaceName type wireguard"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add dev $InterfaceName type wireguard"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add dev $InterfaceName type wireguard"
 
 # Add address for wireguard (used internally in wireguard comms)
-echo sshpass -p "root" dbclient -y "$node" "ip address add $Address dev $InterfaceName"
-sshpass -p "root" dbclient -y "$node" "ip address add $Address dev $InterfaceName"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip address add $Address dev $InterfaceName"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip address add $Address dev $InterfaceName"
 
 # Set interface UP
-echo sshpass -p "root" dbclient -y "$node" "ip link set $InterfaceName up"
-sshpass -p "root" dbclient -y "$node" "ip link set $InterfaceName up"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $InterfaceName up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $InterfaceName up"
 
 # Set up route for easy resolution
-echo sshpass -p "root" dbclient -y "$node" "ip route add $Subnet dev wg0 proto kernel scope link src $AddressNoSubnet"
-sshpass -p "root" dbclient -y "$node" "ip route add $Subnet dev wg0 proto kernel scope link src $AddressNoSubnet"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip route add $Subnet dev wg0 proto kernel scope link src $AddressNoSubnet"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip route add $Subnet dev wg0 proto kernel scope link src $AddressNoSubnet"
 
 # Set the priv key from wireguard instance
-echo sshpass -p "root" dbclient -y "$node" "printf '%s' \"$PrivateKey\" | wg set $InterfaceName private-key /dev/stdin"
-sshpass -p "root" dbclient -y "$node" "printf '%s' \"$PrivateKey\" | wg set $InterfaceName private-key /dev/stdin"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "printf '%s' \"$PrivateKey\" | wg set $InterfaceName private-key /dev/stdin"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "printf '%s' \"$PrivateKey\" | wg set $InterfaceName private-key /dev/stdin"
 
 # Specify port inbound communication needs to come from
-echo sshpass -p "root" dbclient -y "$node" "wg set $InterfaceName listen-port $ListenPort"
-sshpass -p "root" dbclient -y "$node" "wg set $InterfaceName listen-port $ListenPort"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "wg set $InterfaceName listen-port $ListenPort"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "wg set $InterfaceName listen-port $ListenPort"
 
 echo "Wireface setup complete"
 

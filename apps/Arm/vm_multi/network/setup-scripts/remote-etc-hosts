@@ -69,7 +69,7 @@ if [[ -z $host_ip || -z $etc_host || -z $etc_ip ]]; then
 fi
 
 # Add new vlan on remote device
-sshpass -p "root" dbclient -y "$host_ip" "echo $etc_ip $etc_host | tee -a /etc/hosts > /dev/null"
-echo sshpass -p "root" dbclient -y "$host_ip" "echo $etc_ip $etc_host | tee -a /etc/hosts > /dev/null"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host_ip" "echo $etc_ip $etc_host | tee -a /etc/hosts > /dev/null"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$host_ip" "echo $etc_ip $etc_host | tee -a /etc/hosts > /dev/null"
 
 

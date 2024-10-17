@@ -25,7 +25,14 @@ elseif("${PLATFORM}" STREQUAL "qemu-arm-virt")
 endif()
 
 # Generate our overlayed rootfs images
-set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/rootfs.cpio.gz")
+# set(rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/rootfs.cpio.gz")
+set(vm0_rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/vm0-rootfs.cpio.gz")
+set(vm1_rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/vm1-rootfs.cpio.gz")
+set(vm2_rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/vm2-rootfs.cpio.gz")
+set(vm3_rootfs_file "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/vm3-rootfs.cpio.gz")
+
+
+
 
 AddFileToOverlayDir(
     "S90bridge_setup"
@@ -33,19 +40,6 @@ AddFileToOverlayDir(
     "etc/init.d"
     overlay_vm0
 )
-
-AddOverlayDirToRootfs(
-    overlay_vm0
-    ${rootfs_file}
-    "buildroot"
-    "rootfs_install"
-    vm0_output_overlayed_rootfs_location
-    rootfs_target_vm0
-    GZIP
-)
-
-
-
 # Add all the materials for aegis
 AddFileToOverlayDir(
     "wireguard-interface.sh"
@@ -107,7 +101,85 @@ AddFileToOverlayDir(
     "root"
     overlay_vm0
 )
+AddFileToOverlayDir(
+    "aegis-conf.yml"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
+    "etc/aegis"
+    overlay_vm0
+)
+AddOverlayDirToRootfs(
+    overlay_vm0
+    ${vm0_rootfs_file}
+    "buildroot"
+    "rootfs_install"
+    vm0_output_overlayed_rootfs_location
+    rootfs_target_vm0
+    GZIP
+)
 
+
+
+
+
+# Files needed for vm1 overlay
+AddFileToOverlayDir(
+    "arp-forwarding"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/arp-forwarding
+    "etc/aegis/scripts"
+    overlay_client_vm1
+)
+AddFileToOverlayDir(
+    "clean"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/clean
+    "etc/aegis/scripts"
+    overlay_client_vm1
+)
+AddFileToOverlayDir(
+    "S90client_net_vm"
+    ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/vm_client_net_setup.sh
+    "etc/init.d"
+    overlay_client_vm1
+)
+AddOverlayDirToRootfs(
+    overlay_client_vm1
+    ${vm1_rootfs_file}
+    "buildroot"
+    "rootfs_install"
+    vm1_output_overlayed_rootfs_location
+    rootfs_target_client_vm1
+    GZIP
+)
+
+
+
+# Files needed for vm2 overlay
+AddFileToOverlayDir(
+    "arp-forwarding"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/arp-forwarding
+    "etc/aegis/scripts"
+    overlay_client_vm2
+)
+AddFileToOverlayDir(
+    "clean"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/clean
+    "etc/aegis/scripts"
+    overlay_client_vm2
+)
+AddFileToOverlayDir(
+    "S90client_net_vm"
+    ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/vm_client_net_setup.sh
+    "etc/init.d"
+    overlay_client_vm2
+)
+AddOverlayDirToRootfs(
+    overlay_client_vm2
+    ${vm2_rootfs_file}
+    "buildroot"
+    "rootfs_install"
+    vm2_output_overlayed_rootfs_location
+    rootfs_target_client_vm2
+    GZIP
+)
 
 
 
@@ -115,35 +187,39 @@ AddFileToOverlayDir(
     "arp-forwarding"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/arp-forwarding
     "etc/aegis/scripts"
-    overlay_client_vm
+    overlay_client_vm3
 )
 AddFileToOverlayDir(
     "clean"
     ${CMAKE_CURRENT_SOURCE_DIR}/network/vnfs/clean
     "etc/aegis/scripts"
-    overlay_client_vm
+    overlay_client_vm3
 )
 AddFileToOverlayDir(
-    "aegis-conf.yml"
-    ${CMAKE_CURRENT_SOURCE_DIR}/network/aegis-conf.yml
-    "etc/aegis"
-    overlay_vm0
+    "ipsec.secrets"
+    ${CMAKE_CURRENT_SOURCE_DIR}/network/ipsec.secrets
+    "etc"
+    overlay_client_vm3
 )
 AddFileToOverlayDir(
     "S90client_net_vm"
     ${CMAKE_CURRENT_SOURCE_DIR}/overlay_files/vm_client_net_setup.sh
     "etc/init.d"
-    overlay_client_vm
+    overlay_client_vm3
 )
 AddOverlayDirToRootfs(
-    overlay_client_vm
-    ${rootfs_file}
+    overlay_client_vm3
+    ${vm3_rootfs_file}
     "buildroot"
     "rootfs_install"
-    client_output_overlayed_rootfs_location
-    rootfs_target_client_vm
+    vm3_output_overlayed_rootfs_location
+    rootfs_target_client_vm3
     GZIP
 )
+
+
+
+
 
 AddToFileServer(
     "linux-initrd-vm0"
@@ -151,14 +227,39 @@ AddToFileServer(
     DEPENDS
     rootfs_target_vm0
 )
+
+
+
+# AddToFileServer(
+#     "linux" 
+#     "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux"
+#     DEPENDS
+#     rootfs_target_client_vm
+# )
+
 AddToFileServer(
-    "linux-initrd-vm-client"
-    "${client_output_overlayed_rootfs_location}"
+    "linux-initrd-vm1-client"
+    "${vm1_output_overlayed_rootfs_location}"
     DEPENDS
-    rootfs_target_client_vm
+    rootfs_target_client_vm1
+)
+
+AddToFileServer(
+    "linux-initrd-vm2-client"
+    "${vm2_output_overlayed_rootfs_location}"
+    DEPENDS
+    rootfs_target_client_vm2
+)
+
+AddToFileServer(
+    "linux-initrd-vm3-client"
+    "${vm3_output_overlayed_rootfs_location}"
+    DEPENDS
+    rootfs_target_client_vm3
 )
 
 AddToFileServer("linux" "${CAMKES_VM_IMAGES_DIR}/${KernelARMPlatform}/linux")
+
 
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB VmVchan Tk1DeviceFwd Tk1Insecure)
 
