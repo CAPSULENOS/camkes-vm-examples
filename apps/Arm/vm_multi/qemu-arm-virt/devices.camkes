@@ -1,3 +1,9 @@
+#ifndef CAPSULE_NODE
+#define VM0_NAME    "r2"
+#else
+#define VM0_NAME    XSTR(CAPSULE_NODE)
+#endif
+
 /*
  * Copyright 2020, Data61, CSIRO (ABN 41 687 119 230)
  *
@@ -5,6 +11,9 @@
  */
 
 #include <configurations/vm.h>
+
+#define XSTR(x)     STR(x)
+#define STR(x)      #x
 
 //#define VM_INITRD_MAX_SIZE 0x3200000 //50 MB
 #define VM_INITRD_MAX_SIZE  0xc800000 //200 MB
@@ -33,6 +42,7 @@
 #define VM3_RAM_BASE        0xa00000000
 #define VM3_RAM_SIZE        0x20000000 // 2<^29 == 512MB
 #define VM3_DTB_ADDR        VM_DTB_ADDR(VM3_RAM_BASE, VM2_RAM_SIZE, VM_DTB_OFFSET)
+
 #define VM3_INITRD_ADDR     VM_INITRD_ADDR(VM3_DTB_ADDR, VM_INITRD_MAX_SIZE)
 
 assembly {
@@ -47,7 +57,7 @@ assembly {
             "initrd_addr" : VAR_STRINGIZE(VM0_INITRD_ADDR),
         };
         vm0.vm_image_config = {
-            "kernel_bootcmdline" : "node=vm0 pci=nomsi console=ttyAMA0", // pci=nomsi is a MUST for passthrough VM
+            "kernel_bootcmdline" : "node=" VM0_NAME " pci=nomsi console=ttyAMA0 mgmtnic=eth1 mgmtvlan=1000", // pci=nomsi is a MUST for passthrough VM
             "kernel_stdout" : "/pl011@9000000",
             "initrd_name" : "linux-initrd-vm0",
             "generate_dtb": true,
@@ -78,8 +88,8 @@ assembly {
             "initrd_addr" : VAR_STRINGIZE(VM1_INITRD_ADDR),
         };
         vm1.vm_image_config = {
-            "kernel_bootcmdline" : "node=vm1 vlan=100",
-            "initrd_name" : "linux-initrd-vm-client",
+            "kernel_bootcmdline" : "node=vm1",
+            "initrd_name" : "linux-initrd-vm1-client",
             "generate_dtb": true,
             "provide_dtb" : false,
         };
@@ -100,8 +110,8 @@ assembly {
             "initrd_addr" : VAR_STRINGIZE(VM2_INITRD_ADDR),
         };
         vm2.vm_image_config = {
-            "kernel_bootcmdline" : "node=vm2 vlan=101",
-            "initrd_name" : "linux-initrd-vm-client",
+            "kernel_bootcmdline" : "node=vm2",
+            "initrd_name" : "linux-initrd-vm2-client",
             "generate_dtb": true,
             "provide_dtb" : false,
         };
@@ -121,8 +131,8 @@ assembly {
             "initrd_addr" : VAR_STRINGIZE(VM3_INITRD_ADDR),
         };
         vm3.vm_image_config = {
-            "kernel_bootcmdline" : "node=vm3 vlan=102",
-            "initrd_name" : "linux-initrd-vm-client",
+            "kernel_bootcmdline" : "node=vm3",
+            "initrd_name" : "linux-initrd-vm3-client",
             "generate_dtb": true,
             "provide_dtb" : false,
         };

@@ -1,19 +1,21 @@
+#!/bin/sh
 
 dev=eth0
-tag1=100
-tag2=200
-type="bidirectional"
+vid1=100
+vid2=200
+type="unidirectional"
 node=""
 
 # Help menu
 show_help() {
     echo "Makes a node silently forward vlan packets from one network to another using vanilla linux on a remote host"
     echo
-    echo "Usage: $0 [options] node dev vid1 vid2"
+    echo "Usage: $0 [options] --node node --dev dev --vid1 vid1 --vid2 vid2"
     echo
     echo "Options:"
-    echo "  --bi,    Allow bidirectional flow (default)"
-    echo "  --uni,   Allow unidirectional flow"
+    echo "  --bi,    Allow bidirectional flow"
+    echo "  --uni,   Allow unidirectional flow (default)"
+    echo "  --node,  Specify the node to apply this flow to"
     echo "  --dev,   Specify the device to apply this flow to"
     echo "  --vid1,  Specify the vlan id to forward from"
     echo "  --vid2,  Specify the vlan id to forward to"
@@ -56,28 +58,12 @@ while [[ $# -gt 0 ]]; do
         show_help
         exit 0
         ;;
+    *)
+        echo "Unknown paramter $1"
+        shift
+        ;;
   esac
 done
-
-
-# Parse positional arguments
-if [[ -z $node && $# -ge 1 ]]; then
-    node="$1"
-    shift
-fi
-
-if [[ -z $dev&& $# -ge 1 ]]; then
-    bridge="$1"
-    shift
-fi
-if [[ -z $vid1 && $# -ge 1 ]]; then
-    vid1="$1"
-    shift
-fi
-if [[ -z $vid2 && $# -ge 1 ]]; then
-    vid2="$1"
-    shift
-fi
 
 
 # Verify we have all the arguments
@@ -89,29 +75,59 @@ fi
 
 
 # Create VLAN interfaces
-sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$tag1 type vlan id $tag1"
-sshpass -p "root" dbclient -y "$node" "ip link add link $dev name $dev.$tag2 type vlan id $tag2"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid1 type vlan id $vid1"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid2 type vlan id $vid2"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid1 type vlan id $vid1"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid2 type vlan id $vid2"
+
 
 # Bring up interfaces
-sshpass -p "root" dbclient -y "$node" "ip link set $dev up"
-sshpass -p "root" dbclient -y "$node" "ip link set $dev.$tag1 up"
-sshpass -p "root" dbclient -y "$node" "ip link set $dev.$tag2 up"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev up"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid1 up"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid2 up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid1 up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid2 up"
+
 
 # Create a bridge and add interfaces
-sshpass -p "root" dbclient -y "$node" "ip link add name br0 type bridge"
-sshpass -p "root" dbclient -y "$node" "ip link set br0 up"
-sshpass -p "root" dbclient -y "$node" "ip link set $dev.$tag1 master br0"
-sshpass -p "root" dbclient -y "$node" "ip link set $dev.$tag2 master br0"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add name br$vid1$vid2 type bridge"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add name br$vid1$vid2 type bridge"
 
-# Set up forwarding rules
-sshpass -p "root" dbclient -y "$node" "iptables -t nat -A PREROUTING -i $dev.$tag1 -j DNAT --to-destination $dev.$tag2"
-sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$tag1 -o $dev.$tag2 -j ACCEPT"
-sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$tag2 -o $dev.$tag1 -m state --state ESTABLISHED,RELATED -j ACCEPT"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set br$vid1$vid2 up"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set br$vid1$vid2 up"
 
-# Add the reverse direction if necessary
-if [ "$type" = "bidirectional" ]; then
-    sshpass -p "root" dbclient -y "$node" "iptables -t nat -A PREROUTING -i $dev.$tag2 -j DNAT --to-destination $dev.$tag1"
-    sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$tag2 -o $dev.$tag1 -j ACCEPT"
-    sshpass -p "root" dbclient -y "$node" "iptables -A FORWARD -i $dev.$tag1 -o $dev.$tag2 -m state --state ESTABLISHED,RELATED -j ACCEPT"
-fi
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid1 master br$vid1$vid2"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid1 master br$vid1$vid2"
+
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid2 master br$vid1$vid2"
+sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link set $dev.$vid2 master br$vid1$vid2"
+
+
+# # Set up forwarding rules
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
+# # sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i eth0.20 -o eth0.10 -j ACCEPT"
+# 
+# # Enfore unidirectionality to prevent broadcast storms
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j DROP"
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j DROP"
+
+
+
+
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -t nat -A PREROUTING -i $dev.$vid1 -j DNAT --to-destination $dev.$vid2"
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
+# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -m state --state ESTABLISHED,RELATED -j ACCEPT"
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -t nat -A PREROUTING -i $dev.$vid1 -j DNAT --to-destination $dev.$vid2"
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -j ACCEPT"
+# sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -m state --state ESTABLISHED,RELATED -j ACCEPT"
+
+
+# # Add the reverse direction if necessary
+# if [ "$type" = "bidirectional" ]; then
+#     sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -t nat -A PREROUTING -i $dev.$vid2 -j DNAT --to-destination $dev.$vid1"
+#     sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid2 -o $dev.$vid1 -j ACCEPT"
+#     sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "iptables -A FORWARD -i $dev.$vid1 -o $dev.$vid2 -m state --state ESTABLISHED,RELATED -j ACCEPT"
+# fi
 
