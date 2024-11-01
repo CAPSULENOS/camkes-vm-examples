@@ -1,5 +1,5 @@
 #ifndef CAPSULE_NODE
-#define VM0_NAME    "r2"
+#define VM0_NAME    "r1"
 #else
 #define VM0_NAME    XSTR(CAPSULE_NODE)
 #endif

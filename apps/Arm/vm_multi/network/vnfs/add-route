@@ -43,6 +43,11 @@ while [[ $# -gt 0 ]]; do
         show_help
         exit 0
         ;;
+    *)
+        echo "Unknown paramter $1"
+        shift
+        exit 1
+        ;;
   esac
 done
 

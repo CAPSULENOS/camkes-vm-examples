@@ -4,6 +4,7 @@ node=""
 dev=eth0
 vid=""
 ip=""
+promisc=false
 
 
 # Help menu
@@ -45,6 +46,10 @@ while [[ $# -gt 0 ]]; do
         vid="$1"
         shift
         ;;
+    --promisc)
+        promisc=true
+        shift
+        ;;
     --help)
         show_help
         exit 0
@@ -67,12 +72,9 @@ fi
 sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 echo sshpass -p "root" ssh -o StrictHostKeyChecking=no "$node" "ip link add link $dev name $dev.$vid type vlan id $vid"
 
-# random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
-# sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid address $random_mac"
-# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid address $random_mac"
-
-# sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid"
-# echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid"
+random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid address $random_mac"
+echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid address $random_mac"
 
 sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid up"
 echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set dev $dev.$vid up"
@@ -82,3 +84,7 @@ if [ -n "$ip" ]; then
     echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip addr add $ip dev $dev.$vid"
 fi
 
+if [ "$promisc" = "true" ]; then
+    sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set $dev.$vid promisc on"
+    echo sshpass -p "root" ssh -o StrictHostKeyChecking=no $node "ip link set $dev.$vid promisc on"
+fi

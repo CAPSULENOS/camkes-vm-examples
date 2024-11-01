@@ -61,6 +61,7 @@ while [[ $# -gt 0 ]]; do
     *)
         echo "Unknown paramter $1"
         shift
+        exit 1
         ;;
   esac
 done

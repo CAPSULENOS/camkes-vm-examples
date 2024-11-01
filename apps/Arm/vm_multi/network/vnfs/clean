@@ -37,6 +37,13 @@ for iface in $interfaces; do
     iptables -P FORWARD ACCEPT
     iptables -P OUTPUT ACCEPT
 
+    ebtables -F    # Flush all chains
+    ebtables -X    # Delete any user-defined chains
+
+    ebtables -F FORWARD
+    ebtables -F INPUT
+    ebtables -F OUTPUT
+
     echo "Disabling Proxy ARP on interface $iface..."
     echo 0 > /proc/sys/net/ipv4/conf/$iface/proxy_arp
 done
@@ -62,20 +69,24 @@ done
 
 
 # Get the default gateway provided by DHCP on eth0
-dhcp_gateway=$(ip route show dev eth0.4094 | grep 'default' | awk '{print $3}')
+dhcp_gateway=$(ip route show dev eth0 | grep 'default' | awk '{print $3}')
 
 # Check if a default gateway was found
 if [ -n "$dhcp_gateway" ]; then
     # Set the default route to the DHCP-provided gateway
-    ip route replace default via "$dhcp_gateway" dev eth0.4094
+    ip route replace default via "$dhcp_gateway" dev eth0
 else
-    echo "No DHCP gateway found on eth0.4094"
+    echo "No DHCP gateway found on eth0."
 fi
 
+ipsec stop
 
-if command -v ipsec >/dev/null 2>&1; then
-    ipsec stop
-else
-    echo "ipsec command not found, skipping."
-fi
+# List all bridges
+bridges=$(ip link show type bridge | grep -o '^\d*: \w*' | awk '{print $2}')
+
+# Loop through each bridge and delete it
+for bridge in $bridges; do
+    sudo ip link set dev "$bridge" down
+    sudo ip link delete "$bridge" type bridge
+done
 
