@@ -6,9 +6,24 @@
 #
 
 set -e
- 
+
+# mkdir -p /etc/dhcp/
+# touch /etc/dhcp/dhclient.conf
+
+boot_args=$(cat /proc/cmdline)
+# Extract the value of node=
+vm_name=$(grep -o 'node=[^ ]*' /proc/cmdline | cut -d'=' -f2)
+
+# echo "$vm_name" >> /etc/dhcp/dhclient.conf
+
+# random_mac=$(printf '02:%02X:%02X:%02X:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+# ip link set dev eth0 address "02:00:00:00:AB:${vm_name:2}"
+
 ip link set up dev eth0
-udhcpc -i eth0
+ip link add link eth0 name eth0.4094 type vlan id 4094
+ip link set up dev eth0.4094
+
+udhcpc -i eth0.4094 -x hostname:$vm_name
 
 # ip link set up dev eth0
 # 
